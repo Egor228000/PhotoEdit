@@ -32,7 +32,7 @@ object DatabaseModule {
     @Provides @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, "photo_db")
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(true)
             .addTypeConverter(Converters)
             .build()
 
