@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id ("com.google.devtools.ksp") version "2.2.0-2.0.2"
     id("com.google.dagger.hilt.android") version "2.57"
-    kotlin("plugin.serialization") version "2.1.20"
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 android {
@@ -43,6 +43,9 @@ android {
 }
 
 dependencies {
+
+    implementation (libs.androidx.core.splashscreen)
+
     // Загрузка изображений
 
     implementation(libs.landscapist.coil)
@@ -69,6 +72,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     // Serialization
+    implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
 
 
