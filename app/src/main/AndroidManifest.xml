@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <application
+        android:requestLegacyExternalStorage="true"
         android:name=".ApplicationPhotoEdit"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

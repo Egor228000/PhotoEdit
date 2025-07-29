@@ -22,20 +22,27 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import com.example.photoedit.presentation.Collage.CollageScreen
+import com.example.photoedit.presentation.Filters.FiltersScreen
+import com.example.photoedit.presentation.Gallery.GalleryScreen
+import com.example.photoedit.presentation.Gallery.GalleryViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object MainScreenNavKey: NavKey
+data object GalleryScreenNavKey: NavKey
 
+@Serializable
+data class FiltersScreenNavKey(val uri: String?): NavKey
 
-
-
+@Serializable
+data object CollageScreenNavKey: NavKey
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NavigationRoot(
     backStack: NavBackStack,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    galleryViewModel: GalleryViewModel
 ) {
     val localNavSharedTransitionScope: ProvidableCompositionLocal<SharedTransitionScope> =
         compositionLocalOf {
@@ -74,13 +81,27 @@ fun NavigationRoot(
                 ),
                 sceneStrategy = twoPaneStrategy,
                 entryProvider = entryProvider {
-                    entry<MainScreenNavKey> {
 
+                    entry<GalleryScreenNavKey> {
+                        GalleryScreen(
+                            galleryViewModel,
+                            onNavigateFilters = { uri ->
+                                backStack.add(FiltersScreenNavKey(uri))
+                            }
+                        )
                     }
-
+                    entry<FiltersScreenNavKey> { uri ->
+                        FiltersScreen(
+                            galleryViewModel,
+                            uri.uri,
+                            onNavigateGallery = {backStack.add(GalleryScreenNavKey)}
+                        )
+                    }
+                    entry<CollageScreenNavKey> {
+                        CollageScreen(galleryViewModel)
+                    }
                 }
             )
-
         }
     }
 }
