@@ -43,11 +43,11 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.crop.kit)
     implementation (libs.androidx.core.splashscreen)
 
     // Загрузка изображений
-
+    implementation(libs.landscapist.palette)
     implementation(libs.landscapist.coil)
     // Ml kit
     implementation(libs.text.recognition)
