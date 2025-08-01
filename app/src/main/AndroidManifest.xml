@@ -13,6 +13,7 @@
 
     <application
         android:requestLegacyExternalStorage="true"
+
         android:name=".ApplicationPhotoEdit"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,6 +23,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoEdit">
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="subject_segment"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
