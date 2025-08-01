@@ -24,11 +24,8 @@ navigation3Runtime = "1.0.0-alpha02"
 adaptive = "1.2.0-alpha06"
 adaptiveNavigation3 = "1.0.0-SNAPSHOT"
 segmentationSelfie = "16.0.0-beta6"
-textRecognition = "16.0.1"
-
 
 [libraries]
-
 androidx-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 androidx-adaptive-layout = { module = "androidx.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 androidx-adaptive-navigation3 = { module = "androidx.compose.material3.adaptive:adaptive-navigation3", version.ref = "adaptiveNavigation3" }
@@ -63,7 +60,6 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 landscapist-coil = { module = "com.github.skydoves:landscapist-coil", version.ref = "landscapistCoilVersion" }
 landscapist-palette = { module = "com.github.skydoves:landscapist-palette", version.ref = "landscapistPalette" }
 segmentation-selfie = { module = "com.google.mlkit:segmentation-selfie", version.ref = "segmentationSelfie" }
-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
 
 [plugins]
 jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization"}

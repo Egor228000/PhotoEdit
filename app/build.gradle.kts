@@ -44,15 +44,14 @@ android {
 
 dependencies {
     implementation(libs.crop.kit)
-    implementation (libs.androidx.core.splashscreen)
 
+    implementation (libs.androidx.core.splashscreen)
     // Загрузка изображений
+    implementation("com.github.skydoves:landscapist-transformation:2.5.1")
     implementation(libs.landscapist.palette)
     implementation(libs.landscapist.coil)
     // Ml kit
-    implementation(libs.text.recognition)
     implementation(libs.segmentation.selfie)
-
     //Навигация
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
@@ -61,20 +60,16 @@ dependencies {
     implementation (libs.androidx.adaptive)
     implementation (libs.androidx.adaptive.layout)
     implementation(libs.androidx.material3.windowsizeclass)
-
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation (libs.androidx.hilt.navigation.compose)
-
     // Room
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
-
     // Serialization
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
-
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
