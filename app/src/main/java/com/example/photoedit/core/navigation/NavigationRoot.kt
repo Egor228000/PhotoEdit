@@ -1,5 +1,7 @@
 package com.example.photoedit.core.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
@@ -37,6 +39,7 @@ data class FiltersScreenNavKey(val uri: String?): NavKey
 @Serializable
 data object CollageScreenNavKey: NavKey
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NavigationRoot(
@@ -82,7 +85,10 @@ fun NavigationRoot(
                 sceneStrategy = twoPaneStrategy,
                 entryProvider = entryProvider {
 
-                    entry<GalleryScreenNavKey> {
+                    entry<GalleryScreenNavKey>(
+                        metadata = TwoPaneScene.twoPane()
+
+                    ) {
                         GalleryScreen(
                             galleryViewModel,
                             onNavigateFilters = { uri ->
@@ -90,7 +96,9 @@ fun NavigationRoot(
                             }
                         )
                     }
-                    entry<FiltersScreenNavKey> { uri ->
+                    entry<FiltersScreenNavKey>(
+
+                    ) { uri ->
                         FiltersScreen(
                             galleryViewModel,
                             uri.uri,
