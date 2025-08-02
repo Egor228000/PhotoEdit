@@ -69,10 +69,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.photoedit.CustomIconButton
@@ -600,18 +602,15 @@ fun FiltersScreen(
                                 modifier = Modifier.matchParentSize(),
                                 strokes = strokes,
                                 currentStroke = currentStroke,
-                                onStrokeStart = { offset, color ->
+                                onStrokeStart = { offset, color, widthPx ->
                                     val newPoints = mutableStateListOf(offset)
-                                    val newStroke = ColoredStroke(newPoints, color)
+                                    val newStroke = ColoredStroke(newPoints, color, widthPx)
                                     currentStroke = newStroke
                                     strokes.add(newStroke)
                                 },
-                                onStroke = { pos ->
-                                    currentStroke?.points?.add(pos)
-                                },
+                                onStroke = { pos -> currentStroke?.points?.add(pos) },
                                 onStrokeEnd = { currentStroke = null },
-                                strokeWidth = 4.dp,
-                                galleryViewModel
+                                galleryViewModel = galleryViewModel
                             )
                         }
 
@@ -632,6 +631,11 @@ fun FiltersScreen(
                                 )
                             }
                         }
+                        StrokeWidthSlider(
+                            viewModel = galleryViewModel,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+
                         DrawableActionButtons(
 
                             onCancel = {
@@ -702,7 +706,8 @@ fun FiltersScreen(
 
 data class ColoredStroke(
     val points: SnapshotStateList<Offset>,
-    val color: Color
+    val color: Color,
+    val strokeWidth: Float
 )
 
 @Composable
@@ -731,12 +736,13 @@ fun DrawableImage(
     modifier: Modifier = Modifier,
     strokes: List<ColoredStroke>,
     currentStroke: ColoredStroke?,
-    onStrokeStart: (Offset, Color) -> Unit,
+    onStrokeStart: (Offset, Color, Float) -> Unit,
     onStroke: (Offset) -> Unit,
     onStrokeEnd: () -> Unit,
-    strokeWidth: Dp = 4.dp,
     galleryViewModel: GalleryViewModel
 ) {
+    val density = LocalDensity.current
+
     Box(
         modifier = modifier
             .pointerInput(Unit) {
@@ -760,7 +766,9 @@ fun DrawableImage(
                             14 -> Color(0xFF009688)
                             else -> Color.Black
                         }
-                        onStrokeStart(offset, currentColor)
+
+                        val widthPx = with(density) { galleryViewModel.strokeWidthDp.value.toPx() }
+                        onStrokeStart(offset, currentColor, widthPx)
                     },
                     onDrag = { change, _ ->
                         change.consume()
@@ -772,8 +780,6 @@ fun DrawableImage(
             }
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
-            val paint = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
-
             for (stroke in strokes) {
                 if (stroke.points.size >= 2) {
                     val path = Path().apply {
@@ -782,7 +788,11 @@ fun DrawableImage(
                             lineTo(pt.x, pt.y)
                         }
                     }
-                    drawPath(path = path, color = stroke.color, style = paint)
+                    drawPath(
+                        path = path,
+                        color = stroke.color,
+                        style = Stroke(width = stroke.strokeWidth, cap = StrokeCap.Round)
+                    )
                 }
             }
 
@@ -794,13 +804,48 @@ fun DrawableImage(
                             lineTo(pt.x, pt.y)
                         }
                     }
-                    drawPath(path = path, color = stroke.color, style = paint)
+                    drawPath(
+                        path = path,
+                        color = stroke.color,
+                        style = Stroke(width = stroke.strokeWidth, cap = StrokeCap.Round)
+                    )
                 }
             }
         }
     }
 }
 
+@Composable
+fun StrokeWidthSlider(
+    viewModel: GalleryViewModel,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Толщина:",
+            modifier = Modifier.padding(end = 8.dp),
+            fontSize = 14.sp
+        )
+        Slider(
+            modifier = Modifier.weight(1f),
+            value = viewModel.strokeWidthDp.value.value,
+            onValueChange = { newValue ->
+                viewModel.strokeWidthDp.value = newValue.dp
+            },
+            valueRange = 1f..20f,
+            steps = 19
+        )
+        Text(
+            text = "${viewModel.strokeWidthDp.value.value.roundToInt()} dp",
+            fontSize = 14.sp
+        )
+    }
+}
 
 @Composable
 fun DrawableActionButtons(

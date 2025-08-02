@@ -10,7 +10,9 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.tasks.Task
@@ -133,6 +135,8 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
         isLastPage = false
         _listImage.value = emptyList()
     }
+
+    val strokeWidthDp = mutableStateOf(4.dp)
 
     // Загрузка медиа
     fun loadNextPage() {
