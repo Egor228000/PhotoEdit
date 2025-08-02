@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 },
                 containerColor = Color.White,
                 bottomBar = {
-                    if (selectedIndex != 0 && selectedIndex != 1 && selectedIndex != 2 && selectedIndex != 3) {
+                    if (selectedIndex != 0 && selectedIndex != 1 && selectedIndex != 2 && selectedIndex != 3 && selectedIndex != 4) {
                         BottomBar(backStack, galleryViewModel)
 
                     } else {
