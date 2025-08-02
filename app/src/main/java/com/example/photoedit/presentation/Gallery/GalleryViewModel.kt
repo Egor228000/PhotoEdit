@@ -109,6 +109,11 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
         _hasPermission.value = bool
     }
 
+    private val _colorSelectedItem = MutableStateFlow(0)
+    val colorSelectedItem: StateFlow<Int> = _colorSelectedItem.asStateFlow()
+    fun addcolorSelectedItem(add: Int) {
+        _colorSelectedItem.value = add
+    }
 
     private val resolver = context.contentResolver
 
