@@ -1,23 +1,15 @@
 package com.example.photoedit.presentation.Filters
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.ImageDecoder
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -34,7 +25,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,7 +37,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
@@ -56,30 +45,32 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.photoedit.CustomIconButton
 import com.example.photoedit.R
+import com.example.photoedit.presentation.ColorSelectedItem
+import com.example.photoedit.presentation.CustomChipButton
+import com.example.photoedit.presentation.CustomFiltersButton
+import com.example.photoedit.presentation.CustomSaveButton
+import com.example.photoedit.presentation.CustomSlider
+import com.example.photoedit.presentation.DrawableImage
 import com.example.photoedit.presentation.Gallery.GalleryViewModel
+import com.example.photoedit.presentation.StrokeWidthSlider
+import com.example.photoedit.presentation.uriToBitmap
 import com.tanishranjan.cropkit.CropColors
 import com.tanishranjan.cropkit.CropOptions
 import com.tanishranjan.cropkit.CropShape
@@ -110,13 +101,14 @@ fun FiltersScreen(
     val selectedColors by galleryViewModel.selectedColors.collectAsStateWithLifecycle()
     val colorSelectedItem by galleryViewModel.colorSelectedItem.collectAsStateWithLifecycle()
 
-    var rotationZImage = remember { mutableFloatStateOf(0f) }
-    var isRotated = remember { mutableStateOf(false) }
+    val rotationZImage = remember { mutableFloatStateOf(0f) }
+    val isRotated = remember { mutableStateOf(false) }
     val rotationYImage = animateFloatAsState(
         targetValue = if (isRotated.value) 180f else 0f,
         animationSpec = tween(durationMillis = 300)
     )
     var aspectRatio by remember { mutableStateOf(1f) }
+
     aspectRatio = when (selectedCrop) {
         1 -> 1f
         2 -> 1.5f
@@ -164,22 +156,25 @@ fun FiltersScreen(
     )
 
 
-    var colorFilters = remember { mutableStateOf<ColorFilter?>(null) }
+    val colorFilters = remember { mutableStateOf<ColorFilter?>(null) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(uri) {
         galleryViewModel.addSelectedImage(uri?.toUri())
     }
 
-    val scope = rememberCoroutineScope()
     if (selectedImage.toString() == "null") {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxSize()
         ) {
-            Button(onClick = { onNavigateGallery() }) {
-                Text("Выберите фотографию")
-            }
+            Button(
+                onClick = { onNavigateGallery()},
+                colors = ButtonDefaults.buttonColors(Color(0xFF0C7EF0)),
+                shape = RoundedCornerShape(10.dp)
+            ) { Text("Выберите фотографию") }
+
         }
     } else {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -226,7 +221,7 @@ fun FiltersScreen(
                         ImageCropper(
                             modifier = Modifier
                                 .graphicsLayer(
-                                    rotationZ = rotationZImage.value,
+                                    rotationZ = rotationZImage.floatValue,
                                     rotationY = rotationYImage.value
                                 )
                                 .fillMaxSize(),
@@ -275,7 +270,7 @@ fun FiltersScreen(
                             }
                             IconButton(
                                 onClick = {
-                                    rotationZImage.value = when (rotationZImage.value) {
+                                    rotationZImage.floatValue = when (rotationZImage.floatValue) {
                                         0f -> 90f
                                         90f -> 180f
                                         180f -> 270f
@@ -307,10 +302,10 @@ fun FiltersScreen(
                                 )
                             }
                         }
-                        CropActionButtons(
+                        CustomSaveButton(
                             onCancel = {
                                 galleryViewModel.addSelectedIndex(-1)
-                                rotationZImage.value = 0f
+                                rotationZImage.floatValue = 0f
                                 isRotated.value = false
                                 colorFilters.value = null
                                 galleryViewModel.addSelectedFiltes(-1)
@@ -328,7 +323,7 @@ fun FiltersScreen(
 
                                     val matrix = Matrix().apply {
                                         postRotate(
-                                            rotationZImage.value,
+                                            rotationZImage.floatValue,
                                             cropped.width / 2f,
                                             cropped.height / 2f
                                         )
@@ -387,16 +382,16 @@ fun FiltersScreen(
                                 )
                             }
                         }
-                        FilterActionButtons(
+                        CustomSaveButton(
                             onCancel = {
                                 galleryViewModel.addSelectedIndex(-1)
-                                rotationZImage.value = 0f
+                                rotationZImage.floatValue = 0f
                                 isRotated.value = false
                                 colorFilters.value = null
                                 galleryViewModel.addSelectedFiltes(-1)
                                 galleryViewModel.addSelectedColors(-1)
                             },
-                            onSaveFilters = {
+                            onSave = {
                                 scope.launch {
                                     val raw = galleryViewModel.resultBitman.value
                                         ?: galleryViewModel.selectedImage.value?.let { uri ->
@@ -412,11 +407,7 @@ fun FiltersScreen(
 
                                     val filter = colorFilters.value
                                     val outputBitmap = if (filter != null) {
-                                        Bitmap.createBitmap(
-                                            finalBitmap.width,
-                                            finalBitmap.height,
-                                            Bitmap.Config.ARGB_8888
-                                        ).also { bmpWithFilter ->
+                                        createBitmap(finalBitmap.width, finalBitmap.height).also { bmpWithFilter ->
                                             Canvas(bmpWithFilter).drawBitmap(
                                                 finalBitmap, 0f, 0f,
                                                 Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -433,7 +424,7 @@ fun FiltersScreen(
                                     galleryViewModel.addSelectedFiltes(-1)
                                     galleryViewModel.addSelectedColors(-1)
                                     colorFilters.value = null
-                                    rotationZImage.value = 0f
+                                    rotationZImage.floatValue = 0f
                                     isRotated.value = false
                                 }
                             }
@@ -464,14 +455,14 @@ fun FiltersScreen(
                                 )
                             }
                         }
-                        var progressBrightness by remember { mutableStateOf(0f) }
-                        var progressContrast by remember { mutableStateOf(1f) }
-                        var progressSaturation by remember { mutableStateOf(1f) }
+                        var progressBrightness by remember { mutableFloatStateOf(0f) }
+                        var progressContrast by remember { mutableFloatStateOf(1f) }
+                        var progressSaturation by remember { mutableFloatStateOf(1f) }
 
                         when (selectedColors) {
 
                             0 -> {
-                                Slider(
+                                CustomSlider (
                                     value = progressBrightness,
                                     onValueChange = { progressBrightness = it },
                                     valueRange = -255f..255f
@@ -479,19 +470,21 @@ fun FiltersScreen(
                             }
 
                             1 -> {
-                                Slider(
+                                CustomSlider (
                                     value = progressContrast,
                                     onValueChange = { progressContrast = it },
                                     valueRange = 0f..4f
                                 )
+
                             }
 
                             2 -> {
-                                Slider(
+                                CustomSlider (
                                     value = progressSaturation,
                                     onValueChange = { progressSaturation = it },
                                     valueRange = 0f..2f
                                 )
+
                             }
 
                             3 -> {
@@ -518,16 +511,16 @@ fun FiltersScreen(
                         LaunchedEffect(colorMatrix) {
                             colorFilters.value = ColorFilter.colorMatrix(colorMatrix)
                         }
-                        ColorActionButtons(
+                        CustomSaveButton(
                             onCancel = {
                                 galleryViewModel.addSelectedIndex(-1)
-                                rotationZImage.value = 0f
+                                rotationZImage.floatValue = 0f
                                 isRotated.value = false
                                 colorFilters.value = null
                                 galleryViewModel.addSelectedFiltes(-1)
                                 galleryViewModel.addSelectedColors(-1)
                             },
-                            onSaveFilters = {
+                            onSave = {
                                 scope.launch {
                                     val raw = galleryViewModel.resultBitman.value
                                         ?: galleryViewModel.selectedImage.value?.let { uri ->
@@ -535,7 +528,7 @@ fun FiltersScreen(
                                         }
                                         ?: return@launch
 
-                                    var finalBitmap = if (raw.config == Bitmap.Config.HARDWARE) {
+                                    val finalBitmap = if (raw.config == Bitmap.Config.HARDWARE) {
                                         raw.copy(Bitmap.Config.ARGB_8888, true)
                                     } else {
                                         raw.copy(Bitmap.Config.ARGB_8888, true)
@@ -543,11 +536,7 @@ fun FiltersScreen(
 
                                     val filter = colorFilters.value
                                     val outputBitmap = filter?.let {
-                                        Bitmap.createBitmap(
-                                            finalBitmap.width,
-                                            finalBitmap.height,
-                                            Bitmap.Config.ARGB_8888
-                                        ).also { bmpWithFilter ->
+                                        createBitmap(finalBitmap.width, finalBitmap.height).also { bmpWithFilter ->
                                             Canvas(bmpWithFilter).drawBitmap(
                                                 finalBitmap, 0f, 0f,
                                                 Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -569,11 +558,7 @@ fun FiltersScreen(
 
                     val captureLayer = rememberGraphicsLayer()
                     val strokes = remember { mutableStateListOf<SnapshotStateList<Offset>>() }
-                    val strokeColors = remember { mutableStateListOf<Color>() }
-                    var currentStroke by remember { mutableStateOf<SnapshotStateList<Offset>?>(null) }
                     var drawAreaSize by remember { mutableStateOf(IntSize.Zero) }
-
-                    val scope = rememberCoroutineScope()
 
                     Column(modifier = Modifier.fillMaxSize()) {
                         Box(
@@ -636,11 +621,10 @@ fun FiltersScreen(
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
 
-                        DrawableActionButtons(
+                        CustomSaveButton(
 
                             onCancel = {
                                 strokes.clear()
-                                currentStroke = null
                                 galleryViewModel.addSelectedIndex(-1)
                             },
                             onSave = {
@@ -693,7 +677,7 @@ fun FiltersScreen(
                             galleryViewModel.addSelectedFiltes(-1)
                             galleryViewModel.addSelectedColors(-1)
                             colorFilters.value = null
-                            rotationZImage.value = 0f
+                            rotationZImage.floatValue = 0f
                             isRotated.value = false
                         }
                     }
@@ -704,301 +688,11 @@ fun FiltersScreen(
 }
 
 
+
+
 data class ColoredStroke(
     val points: SnapshotStateList<Offset>,
     val color: Color,
-    val strokeWidth: Float
+    val strokeWidth: Float,
 )
 
-@Composable
-fun ColorSelectedItem(
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    val tintColor = if (isSelected) Color.White else Color.Transparent
-    Box(
-       modifier = Modifier
-           .clip(RoundedCornerShape(50.dp))
-
-           .size(30.dp)
-           .background(color)
-           .border(2.dp, tintColor, shape = RoundedCornerShape(50.dp))
-           .clickable(onClick = {onClick()})
-
-    ) {
-    }
-}
-
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-fun DrawableImage(
-    modifier: Modifier = Modifier,
-    strokes: List<ColoredStroke>,
-    currentStroke: ColoredStroke?,
-    onStrokeStart: (Offset, Color, Float) -> Unit,
-    onStroke: (Offset) -> Unit,
-    onStrokeEnd: () -> Unit,
-    galleryViewModel: GalleryViewModel
-) {
-    val density = LocalDensity.current
-
-    Box(
-        modifier = modifier
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        val currentColor = when (galleryViewModel.colorSelectedItem.value) {
-                            0  -> Color.Black
-                            1  -> Color.DarkGray
-                            2  -> Color.Gray
-                            3  -> Color.LightGray
-                            4  -> Color.White
-                            5  -> Color.Red
-                            6  -> Color.Green
-                            7  -> Color.Blue
-                            8  -> Color.Cyan
-                            9  -> Color.Yellow
-                            10 -> Color.Magenta
-                            11 -> Color(0xFFFF9800)
-                            12 -> Color(0xFF9C27B0)
-                            13 -> Color(0xFF795548)
-                            14 -> Color(0xFF009688)
-                            else -> Color.Black
-                        }
-
-                        val widthPx = with(density) { galleryViewModel.strokeWidthDp.value.toPx() }
-                        onStrokeStart(offset, currentColor, widthPx)
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        onStroke(change.position)
-                    },
-                    onDragEnd = { onStrokeEnd() },
-                    onDragCancel = { onStrokeEnd() }
-                )
-            }
-    ) {
-        Canvas(modifier = Modifier.matchParentSize()) {
-            for (stroke in strokes) {
-                if (stroke.points.size >= 2) {
-                    val path = Path().apply {
-                        moveTo(stroke.points.first().x, stroke.points.first().y)
-                        stroke.points.drop(1).forEach { pt ->
-                            lineTo(pt.x, pt.y)
-                        }
-                    }
-                    drawPath(
-                        path = path,
-                        color = stroke.color,
-                        style = Stroke(width = stroke.strokeWidth, cap = StrokeCap.Round)
-                    )
-                }
-            }
-
-            currentStroke?.let { stroke ->
-                if (stroke.points.size >= 2) {
-                    val path = Path().apply {
-                        moveTo(stroke.points.first().x, stroke.points.first().y)
-                        stroke.points.drop(1).forEach { pt ->
-                            lineTo(pt.x, pt.y)
-                        }
-                    }
-                    drawPath(
-                        path = path,
-                        color = stroke.color,
-                        style = Stroke(width = stroke.strokeWidth, cap = StrokeCap.Round)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun StrokeWidthSlider(
-    viewModel: GalleryViewModel,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            "Толщина:",
-            modifier = Modifier.padding(end = 8.dp),
-            fontSize = 14.sp
-        )
-        Slider(
-            modifier = Modifier.weight(1f),
-            value = viewModel.strokeWidthDp.value.value,
-            onValueChange = { newValue ->
-                viewModel.strokeWidthDp.value = newValue.dp
-            },
-            valueRange = 1f..20f,
-            steps = 19
-        )
-        Text(
-            text = "${viewModel.strokeWidthDp.value.value.roundToInt()} dp",
-            fontSize = 14.sp
-        )
-    }
-}
-
-@Composable
-fun DrawableActionButtons(
-    onCancel: () -> Unit,
-    onSave: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = onCancel,
-            colors = ButtonDefaults.buttonColors(Color(0xFFE5EBF2)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Отмена", color = Color.Black) }
-
-        Button(
-            onClick = onSave,
-            colors = ButtonDefaults.buttonColors(Color(0xFF0C7EF0)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Сохранить") }
-    }
-}
-
-
-@Composable
-fun CropActionButtons(
-    onCancel: () -> Unit,
-    onSave: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = onCancel,
-            colors = ButtonDefaults.buttonColors(Color(0xFFE5EBF2)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Отмена", color = Color.Black) }
-
-        Button(
-            onClick = onSave,
-            colors = ButtonDefaults.buttonColors(Color(0xFF0C7EF0)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Сохранить") }
-    }
-}
-
-@Composable
-fun FilterActionButtons(
-    onCancel: () -> Unit,
-    onSaveFilters: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = onCancel,
-            colors = ButtonDefaults.buttonColors(Color(0xFFE5EBF2)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Отмена", color = Color.Black) }
-
-        Button(
-            onClick = onSaveFilters,
-            colors = ButtonDefaults.buttonColors(Color(0xFF0C7EF0)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Применить") }
-    }
-}
-
-@Composable
-fun ColorActionButtons(
-    onCancel: () -> Unit,
-    onSaveFilters: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = onCancel,
-            colors = ButtonDefaults.buttonColors(Color(0xFFE5EBF2)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Отмена", color = Color.Black) }
-
-        Button(
-            onClick = onSaveFilters,
-            colors = ButtonDefaults.buttonColors(Color(0xFF0C7EF0)),
-            shape = RoundedCornerShape(10.dp)
-        ) { Text("Применить") }
-    }
-}
-
-
-@Composable
-fun CustomChipButton(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    val tintColor = if (isSelected) Color.DarkGray else Color.LightGray
-    Button(
-        onClick = { onClick() },
-        shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(tintColor)
-    ) {
-        Text(text, color = Color.Black)
-    }
-}
-
-@Composable
-fun CustomFiltersButton(
-    color: Color,
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    val tintColor = if (isSelected) Color.White else Color.Transparent
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, tintColor, shape = RoundedCornerShape(10.dp))
-            .size(50.dp)
-            .background(color)
-    ) {
-    }
-}
-
-fun Context.uriToBitmap(uri: Uri): Bitmap? {
-    return try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val source = ImageDecoder.createSource(contentResolver, uri)
-            ImageDecoder.decodeBitmap(source)
-        } else {
-            MediaStore.Images.Media.getBitmap(contentResolver, uri)
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
