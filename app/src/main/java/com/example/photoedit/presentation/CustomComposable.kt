@@ -25,13 +25,16 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -46,7 +49,11 @@ import kotlin.math.roundToInt
 
 @Composable
 fun CustomSaveButton(
-    onCancel: () -> Unit,
+    galleryViewModel: GalleryViewModel,
+    rotationZImage: MutableState<Float>,
+    isRotated: MutableState<Boolean>,
+    colorFilters:  MutableState<ColorFilter?>,
+    strokes: SnapshotStateList<SnapshotStateList<Offset>>,
     onSave: () -> Unit,
 ) {
     Row(
@@ -57,7 +64,14 @@ fun CustomSaveButton(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Button(
-            onClick = onCancel,
+            onClick = {
+                galleryViewModel.allClear()
+                rotationZImage.value = 0f
+                isRotated.value = false
+                colorFilters.value = null
+                strokes.clear()
+
+            },
             colors = ButtonDefaults.buttonColors(Color(0xFFE5EBF2)),
             shape = RoundedCornerShape(10.dp)
         ) { Text("Отмена", color = Color.Black) }
