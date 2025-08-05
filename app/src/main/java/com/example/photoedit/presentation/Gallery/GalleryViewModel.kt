@@ -10,9 +10,13 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
+import androidx.core.graphics.set
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.tasks.Task
@@ -39,9 +43,6 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
 
     private val _listImage = MutableStateFlow<List<Uri>>(emptyList())
     val listImage: StateFlow<List<Uri>> = _listImage.asStateFlow()
-    fun addlistImage(list: List<Uri>) {
-        _listImage.value += list
-    }
 
     private val _selectedImage = MutableStateFlow<Uri?>(null)
     val selectedImage: StateFlow<Uri?> = _selectedImage.asStateFlow()
@@ -117,27 +118,28 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
         _colorSelectedItem.value = add
     }
 
-    private val resolver = context.contentResolver
+    private val _strokeWidthDp = MutableStateFlow(4.dp)
+    val strokeWidthDp: StateFlow<Dp> = _strokeWidthDp.asStateFlow()
+    fun addStrokeWidthDp(dp: Dp) {
+        _strokeWidthDp.value = dp
+    }
 
+
+
+    private val resolver = context.contentResolver
     companion object {
         private const val PAGE_SIZE = 50
     }
-
     private var currentOffset = 0
     private var isLastPage = false
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
-
 
     fun resetPagination() {
         currentOffset = 0
         isLastPage = false
         _listImage.value = emptyList()
     }
-
-    val strokeWidthDp = mutableStateOf(4.dp)
-
     // Загрузка медиа
     fun loadNextPage() {
         if (_isLoading.value || isLastPage) return
@@ -216,7 +218,7 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
     fun removeBackgroundFromBitmap(
         bitmap: Bitmap,
         scope: CoroutineScope,
-        onResult: (Bitmap?) -> Unit
+        onResult: (Bitmap?) -> Unit,
     ) {
         scope.launch {
             val result: Bitmap? = try {
@@ -236,27 +238,25 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
                     val maskH = mask.height
 
                     buffer.rewind()
-                    val rawMask = Bitmap.createBitmap(maskW, maskH, Bitmap.Config.ALPHA_8)
+                    val rawMask = createBitmap(maskW, maskH, Bitmap.Config.ALPHA_8)
                     for (y in 0 until maskH) {
                         for (x in 0 until maskW) {
                             val conf = buffer.getFloat()
                             val a = (conf * 255).toInt().coerceIn(0, 255)
                             // в ALPHA_8 важен только старший байт
-                            rawMask.setPixel(x, y, (a shl 24))
+                            rawMask[x, y] = (a shl 24)
                         }
                     }
 
-                    val scaledMask = Bitmap.createScaledBitmap(rawMask, input.width, input.height, true)
+                    val scaledMask = rawMask.scale(input.width, input.height)
 
-                    val output = Bitmap.createBitmap(input.width, input.height, Bitmap.Config.ARGB_8888)
+                    val output = createBitmap(input.width, input.height)
                     for (y in 0 until input.height) {
                         for (x in 0 until input.width) {
-                            val alpha = Color.alpha(scaledMask.getPixel(x, y))
-                            val pix   = input.getPixel(x, y)
-                            output.setPixel(
-                                x, y,
+                            val alpha = Color.alpha(scaledMask[x, y])
+                            val pix   = input[x, y]
+                            output[x, y] =
                                 Color.argb(alpha, Color.red(pix), Color.green(pix), Color.blue(pix))
-                            )
                         }
                     }
                     output
@@ -310,5 +310,8 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
             0f, 0f,  0f,  1f,   0f
         ))
     }
+
+
+
 
 }
