@@ -124,6 +124,11 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
         _strokeWidthDp.value = dp
     }
 
+    fun allClear() {
+        _selectedIndex.value = -1
+        _selectedFiltes.value = -1
+        _selectedColors.value = -1
+    }
 
 
     private val resolver = context.contentResolver
