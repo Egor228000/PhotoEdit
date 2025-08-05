@@ -157,6 +157,7 @@ fun FiltersScreen(
 
 
     val colorFilters = remember { mutableStateOf<ColorFilter?>(null) }
+    val strokes = remember { mutableStateListOf<SnapshotStateList<Offset>>() }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(uri) {
@@ -303,13 +304,11 @@ fun FiltersScreen(
                             }
                         }
                         CustomSaveButton(
-                            onCancel = {
-                                galleryViewModel.addSelectedIndex(-1)
-                                rotationZImage.floatValue = 0f
-                                isRotated.value = false
-                                colorFilters.value = null
-                                galleryViewModel.addSelectedFiltes(-1)
-                            },
+                            galleryViewModel,
+                            rotationZImage,
+                            isRotated,
+                            colorFilters,
+                            strokes,
                             onSave = {
                                 scope.launch {
                                     val raw = runCatching { cropController.crop() }.getOrNull()
@@ -383,14 +382,11 @@ fun FiltersScreen(
                             }
                         }
                         CustomSaveButton(
-                            onCancel = {
-                                galleryViewModel.addSelectedIndex(-1)
-                                rotationZImage.floatValue = 0f
-                                isRotated.value = false
-                                colorFilters.value = null
-                                galleryViewModel.addSelectedFiltes(-1)
-                                galleryViewModel.addSelectedColors(-1)
-                            },
+                            galleryViewModel,
+                            rotationZImage,
+                            isRotated,
+                            colorFilters,
+                            strokes,
                             onSave = {
                                 scope.launch {
                                     val raw = galleryViewModel.resultBitman.value
@@ -420,9 +416,7 @@ fun FiltersScreen(
                                     }
 
                                     galleryViewModel.addResultBitmap(outputBitmap)
-                                    galleryViewModel.addSelectedIndex(-1)
-                                    galleryViewModel.addSelectedFiltes(-1)
-                                    galleryViewModel.addSelectedColors(-1)
+                                    galleryViewModel.allClear()
                                     colorFilters.value = null
                                     rotationZImage.floatValue = 0f
                                     isRotated.value = false
@@ -512,14 +506,11 @@ fun FiltersScreen(
                             colorFilters.value = ColorFilter.colorMatrix(colorMatrix)
                         }
                         CustomSaveButton(
-                            onCancel = {
-                                galleryViewModel.addSelectedIndex(-1)
-                                rotationZImage.floatValue = 0f
-                                isRotated.value = false
-                                colorFilters.value = null
-                                galleryViewModel.addSelectedFiltes(-1)
-                                galleryViewModel.addSelectedColors(-1)
-                            },
+                            galleryViewModel,
+                            rotationZImage,
+                            isRotated,
+                            colorFilters,
+                            strokes,
                             onSave = {
                                 scope.launch {
                                     val raw = galleryViewModel.resultBitman.value
@@ -547,8 +538,8 @@ fun FiltersScreen(
                                     } ?: finalBitmap
 
                                     galleryViewModel.addResultBitmap(outputBitmap)
-                                    galleryViewModel.addSelectedColors(-1)
-                                    galleryViewModel.addSelectedIndex(-1)
+                                    galleryViewModel.allClear()
+
 
                                 }
                             }
@@ -557,7 +548,6 @@ fun FiltersScreen(
                 } else if (selectedIndex == 4) {
 
                     val captureLayer = rememberGraphicsLayer()
-                    val strokes = remember { mutableStateListOf<SnapshotStateList<Offset>>() }
                     var drawAreaSize by remember { mutableStateOf(IntSize.Zero) }
 
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -622,11 +612,11 @@ fun FiltersScreen(
                         )
 
                         CustomSaveButton(
-
-                            onCancel = {
-                                strokes.clear()
-                                galleryViewModel.addSelectedIndex(-1)
-                            },
+                            galleryViewModel,
+                            rotationZImage,
+                            isRotated,
+                            colorFilters,
+                            strokes,
                             onSave = {
                                 scope.launch {
                                     val fullBitmap = captureLayer.toImageBitmap().asAndroidBitmap()
@@ -653,7 +643,8 @@ fun FiltersScreen(
                                     )
 
                                     galleryViewModel.addResultBitmap(cropped)
-                                    galleryViewModel.addSelectedIndex(-1)
+                                    galleryViewModel.allClear()
+
                                 }
                             }
                         )
@@ -673,9 +664,7 @@ fun FiltersScreen(
 
                             galleryViewModel.addResultBitmap(mutableBitmap)
 
-                            galleryViewModel.addSelectedIndex(-1)
-                            galleryViewModel.addSelectedFiltes(-1)
-                            galleryViewModel.addSelectedColors(-1)
+                            galleryViewModel.allClear()
                             colorFilters.value = null
                             rotationZImage.floatValue = 0f
                             isRotated.value = false
