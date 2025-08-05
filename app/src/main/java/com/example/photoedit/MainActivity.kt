@@ -26,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -64,7 +65,9 @@ class MainActivity : ComponentActivity() {
             val galleryViewModel: GalleryViewModel = hiltViewModel()
 
             val backStack = rememberNavBackStack(GalleryScreenNavKey)
+
             val selectedIndex by galleryViewModel.selectedIndex.collectAsStateWithLifecycle()
+            val selectedImage by galleryViewModel.selectedImage.collectAsStateWithLifecycle()
 
             Scaffold(
                 modifier = Modifier
@@ -75,8 +78,9 @@ class MainActivity : ComponentActivity() {
                 },
                 containerColor = Color.White,
                 bottomBar = {
-                    if (selectedIndex != 0 && selectedIndex != 1 && selectedIndex != 2 && selectedIndex != 3 && selectedIndex != 4) {
+                    if (selectedIndex != 0 && selectedIndex != 1 && selectedIndex != 2 && selectedIndex != 3 && selectedIndex != 4 ) {
                         BottomBar(backStack, galleryViewModel)
+
 
                     } else {
 
@@ -158,6 +162,7 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
 
         FlexibleBottomAppBar(
             containerColor = Color.White,
+            contentColor = Color(0xFF0C7EF0),
             expandedHeight = 80.dp,
             modifier = Modifier
                 .blur(
@@ -220,6 +225,7 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
                         },
                         label = { Text("Галерея") },
                         alwaysShowLabel = true,
+                        colors = NavigationBarItemDefaults.colors(Color(0xFF0C7EF0))
                     )
 
                     NavigationBarItem(
@@ -239,6 +245,8 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
                         },
                         label = { Text("Фильтры") },
                         alwaysShowLabel = true,
+                        colors = NavigationBarItemDefaults.colors(Color(0xFF0C7EF0))
+
                     )
 
                     NavigationBarItem(
@@ -254,6 +262,8 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
                         },
                         label = { Text("Коллажы") },
                         alwaysShowLabel = true,
+                        colors = NavigationBarItemDefaults.colors(Color(0xFF0C7EF0))
+
                     )
                 }
             }
