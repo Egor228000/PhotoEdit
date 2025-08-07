@@ -24,7 +24,6 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
-import com.example.photoedit.presentation.Collage.CollageScreen
 import com.example.photoedit.presentation.Filters.FiltersScreen
 import com.example.photoedit.presentation.Gallery.GalleryScreen
 import com.example.photoedit.presentation.Gallery.GalleryViewModel
@@ -36,8 +35,7 @@ data object GalleryScreenNavKey: NavKey
 @Serializable
 data class FiltersScreenNavKey(val uri: String?): NavKey
 
-@Serializable
-data object CollageScreenNavKey: NavKey
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -105,9 +103,7 @@ fun NavigationRoot(
                             onNavigateGallery = {backStack.add(GalleryScreenNavKey)}
                         )
                     }
-                    entry<CollageScreenNavKey> {
-                        CollageScreen(galleryViewModel)
-                    }
+
                 }
             )
         }

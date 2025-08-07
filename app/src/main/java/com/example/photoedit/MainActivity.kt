@@ -45,7 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.example.photoedit.core.navigation.CollageScreenNavKey
 import com.example.photoedit.core.navigation.FiltersScreenNavKey
 import com.example.photoedit.core.navigation.GalleryScreenNavKey
 import com.example.photoedit.core.navigation.NavigationRoot
@@ -109,7 +108,6 @@ fun TopBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
                 when (backStack.lastOrNull()) {
                     is GalleryScreenNavKey -> "Галерея"
                     is FiltersScreenNavKey -> "Фильтры"
-                    is CollageScreenNavKey -> "Каллажы"
                     else -> {
                         ""
                     }
@@ -183,7 +181,6 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
                         R.drawable.baseline_crop_24 to "Обрезка",
                         R.drawable.baseline_filter_24 to "Фильтры",
                         R.drawable.baseline_invert_colors_24 to "Цвет",
-                        R.drawable.baseline_text_fields_24 to "Надписи",
                         R.drawable.baseline_draw_24 to "Кисть",
                         R.drawable.baseline_layers_clear_24 to "Удалить фон"
 
@@ -244,23 +241,6 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
                             )
                         },
                         label = { Text("Фильтры") },
-                        alwaysShowLabel = true,
-                        colors = NavigationBarItemDefaults.colors(Color(0xFF0C7EF0))
-
-                    )
-
-                    NavigationBarItem(
-                        onClick = {
-                            backStack.add(CollageScreenNavKey)
-                        },
-                        selected = selectedKey == CollageScreenNavKey,
-                        icon = {
-                            Icon(
-                                painterResource(R.drawable.baseline_grid_view_24),
-                                contentDescription = null
-                            )
-                        },
-                        label = { Text("Коллажы") },
                         alwaysShowLabel = true,
                         colors = NavigationBarItemDefaults.colors(Color(0xFF0C7EF0))
 
