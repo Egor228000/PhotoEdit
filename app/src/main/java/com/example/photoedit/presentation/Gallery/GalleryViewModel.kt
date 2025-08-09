@@ -88,6 +88,9 @@ class GalleryViewModel @Inject constructor( @ApplicationContext private val cont
         _resultBitmap.value = bitmap
     }
 
+    private val _originalImage = MutableStateFlow<Uri?>(null)
+    val originalImage: StateFlow<Uri?> = _originalImage.asStateFlow()
+
     fun clearResultBitmap() {
         _resultBitmap.value = null
     }

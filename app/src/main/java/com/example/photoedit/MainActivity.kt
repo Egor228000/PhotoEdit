@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                 },
                 containerColor = Color.White,
                 bottomBar = {
-                    if (selectedIndex != 0 && selectedIndex != 1 && selectedIndex != 2 && selectedIndex != 3 && selectedIndex != 4 ) {
+                    if (selectedIndex != 0 && selectedIndex != 1 && selectedIndex != 2 && selectedIndex != 3 && selectedIndex != 4) {
                         BottomBar(backStack, galleryViewModel)
 
 
@@ -169,38 +169,36 @@ fun BottomBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
         ) {
 
             AnimatedVisibility(
-                visible = selectedImage != null ,
+                visible = selectedImage != null,
                 enter = scaleIn(animationSpec = tween(500)),
                 exit = scaleOut(animationSpec = tween(300))
             ) {
 
+                val items = listOf(
+                    R.drawable.baseline_crop_24 to "Обрезка",
+                    R.drawable.baseline_filter_24 to "Фильтры",
+                    R.drawable.baseline_invert_colors_24 to "Цвет",
+                    R.drawable.baseline_draw_24 to "Кисть",
+                    R.drawable.baseline_layers_clear_24 to "Удалить фон"
 
+                )
 
-
-                    val items = listOf(
-                        R.drawable.baseline_crop_24 to "Обрезка",
-                        R.drawable.baseline_filter_24 to "Фильтры",
-                        R.drawable.baseline_invert_colors_24 to "Цвет",
-                        R.drawable.baseline_draw_24 to "Кисть",
-                        R.drawable.baseline_layers_clear_24 to "Удалить фон"
-
-                    )
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(32.dp),
-                        modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
-                    ) {
-                        items.forEachIndexed { index, (icon, text) ->
-                            CustomIconButton(
-                                icon = icon,
-                                text = text,
-                                isSelected = selectedIndex == index,
-                                onClick = { galleryViewModel.addSelectedIndex(index) }
-                            )
-                        }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                ) {
+                    items.forEachIndexed { index, (icon, text) ->
+                        CustomIconButton(
+                            icon = icon,
+                            text = text,
+                            isSelected = selectedIndex == index,
+                            onClick = { galleryViewModel.addSelectedIndex(index) }
+                        )
                     }
+                }
             }
+
             AnimatedVisibility(
                 visible = selectedImage == null,
                 enter = scaleIn(animationSpec = tween(500)),
@@ -262,7 +260,7 @@ fun CustomIconButton(
     icon: Int,
     text: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val tintColor = if (isSelected) Color.Blue else Color.Black
 
