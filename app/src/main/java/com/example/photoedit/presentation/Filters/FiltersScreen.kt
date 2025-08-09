@@ -10,6 +10,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,6 +54,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -79,6 +83,7 @@ import com.tanishranjan.cropkit.GridLinesVisibility
 import com.tanishranjan.cropkit.ImageCropper
 import com.tanishranjan.cropkit.rememberCropController
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.min
@@ -229,20 +234,76 @@ fun FiltersScreen(
                             cropController = cropController
                         )
                     }
+                    
                 } else {
                     when (selectedIndex) {
-                        4 -> {}
+                        3 -> {}
                          else -> {
-                             Image(
-                                 bitmap = (resultBitman ?: bmp).asImageBitmap(),
-                                 contentDescription = null,
+                             Box(
                                  modifier = Modifier
                                      .fillMaxSize()
-                                   ,
-                                 alignment = Alignment.Center,
-                                 contentScale = ContentScale.Fit,
-                                 colorFilter = colorFilters.value
-                             )
+                             ) {
+
+                                 Image(
+                                     bitmap = (resultBitman ?: bmp).asImageBitmap(),
+                                     contentDescription = null,
+                                     modifier = Modifier
+                                         .fillMaxWidth(),
+                                     alignment = Alignment.Center,
+                                     contentScale = ContentScale.Fit,
+                                     colorFilter = colorFilters.value
+                                 )
+                                 IconButton(
+                                     onClick = {},
+                                     modifier = Modifier
+                                         .pointerInput(Unit) {
+                                             forEachGesture {
+                                                 awaitPointerEventScope {
+                                                     val down = awaitFirstDown()
+
+                                                     val longPressJob = scope.launch {
+                                                         delay(200)
+                                                         // ! Тут нужно исправить
+
+                                                     }
+
+                                                     val up = waitForUpOrCancellation()
+
+                                                     longPressJob.cancel()
+
+                                                     if (up != null) {
+                                                         val duration = up.uptimeMillis - down.uptimeMillis
+                                                         if (duration < 100) {
+                                                            // ! Тут нужно исправить
+
+
+                                                         } else {
+                                                             scope.launch {
+                                                                 // ! Тут нужно исправить
+
+
+                                                             }
+                                                         }
+                                                     } else {
+                                                         longPressJob.cancel()
+                                                         // ! Тут нужно исправить
+
+
+                                                     }
+                                                 }
+                                             }
+                                         }
+                                         .align(Alignment.BottomEnd)
+                                 ) {
+                                     Icon(
+                                         painterResource(R.drawable.outline_photo_size_select_small_24),
+                                         null,
+                                         tint = Color.Black
+                                     )
+                                 }
+                             }
+
+
                          }
                     }
                 }
@@ -311,6 +372,7 @@ fun FiltersScreen(
                             strokes,
                             onSave = {
                                 scope.launch {
+
                                     val raw = runCatching { cropController.crop() }.getOrNull()
                                         ?: galleryViewModel.selectedImage.value?.let {
                                             context.uriToBitmap(it)
@@ -545,7 +607,7 @@ fun FiltersScreen(
                             }
                         )
                     }
-                } else if (selectedIndex == 4) {
+                } else if (selectedIndex == 3) {
 
                     val captureLayer = rememberGraphicsLayer()
                     var drawAreaSize by remember { mutableStateOf(IntSize.Zero) }
@@ -650,7 +712,7 @@ fun FiltersScreen(
                         )
                     }
 
-                } else if (selectedIndex == 5) {
+                } else if (selectedIndex == 4) {
                     galleryViewModel.removeBackgroundFromBitmap(
                         bitmap = resultBitman ?: bmp,
                         scope
