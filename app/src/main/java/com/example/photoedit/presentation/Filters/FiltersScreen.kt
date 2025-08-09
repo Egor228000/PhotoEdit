@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
@@ -75,6 +76,8 @@ import com.example.photoedit.presentation.DrawableImage
 import com.example.photoedit.presentation.Gallery.GalleryViewModel
 import com.example.photoedit.presentation.StrokeWidthSlider
 import com.example.photoedit.presentation.uriToBitmap
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.coil.CoilImage
 import com.tanishranjan.cropkit.CropColors
 import com.tanishranjan.cropkit.CropOptions
 import com.tanishranjan.cropkit.CropShape
@@ -113,6 +116,8 @@ fun FiltersScreen(
         animationSpec = tween(durationMillis = 300)
     )
     var aspectRatio by remember { mutableStateOf(1f) }
+
+    var watchOriginalImage by remember { mutableStateOf(false) }
 
     aspectRatio = when (selectedCrop) {
         1 -> 1f
@@ -176,7 +181,7 @@ fun FiltersScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             Button(
-                onClick = { onNavigateGallery()},
+                onClick = { onNavigateGallery() },
                 colors = ButtonDefaults.buttonColors(Color(0xFF0C7EF0)),
                 shape = RoundedCornerShape(10.dp)
             ) { Text("Выберите фотографию") }
@@ -234,77 +239,91 @@ fun FiltersScreen(
                             cropController = cropController
                         )
                     }
-                    
+
                 } else {
                     when (selectedIndex) {
                         3 -> {}
-                         else -> {
-                             Box(
-                                 modifier = Modifier
-                                     .fillMaxSize()
-                             ) {
+                        else -> {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) {
+                                if (!watchOriginalImage) {
 
-                                 Image(
-                                     bitmap = (resultBitman ?: bmp).asImageBitmap(),
-                                     contentDescription = null,
-                                     modifier = Modifier
-                                         .fillMaxWidth(),
-                                     alignment = Alignment.Center,
-                                     contentScale = ContentScale.Fit,
-                                     colorFilter = colorFilters.value
-                                 )
-                                 IconButton(
-                                     onClick = {},
-                                     modifier = Modifier
-                                         .pointerInput(Unit) {
-                                             forEachGesture {
-                                                 awaitPointerEventScope {
-                                                     val down = awaitFirstDown()
+                                    Image(
+                                        bitmap = (resultBitman ?: bmp).asImageBitmap(),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        alignment = Alignment.Center,
+                                        contentScale = ContentScale.Fit,
+                                        colorFilter = colorFilters.value
+                                    )
+                                } else {
 
-                                                     val longPressJob = scope.launch {
-                                                         delay(200)
-                                                         // ! Тут нужно исправить
+                                    CoilImage(
+                                        imageModel = { selectedImage },
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        imageOptions = ImageOptions(
+                                            contentScale = ContentScale.Fit
 
-                                                     }
+                                        )
 
-                                                     val up = waitForUpOrCancellation()
+                                    )
 
-                                                     longPressJob.cancel()
+                                }
+                                Icon(
+                                    painterResource(R.drawable.outline_photo_size_select_small_24),
+                                    null,
+                                    tint = Color.Black,
+                                    modifier = Modifier
+                                        .pointerInput(Unit) {
+                                            forEachGesture {
+                                                awaitPointerEventScope {
+                                                    val down = awaitFirstDown()
 
-                                                     if (up != null) {
-                                                         val duration = up.uptimeMillis - down.uptimeMillis
-                                                         if (duration < 100) {
-                                                            // ! Тут нужно исправить
-
-
-                                                         } else {
-                                                             scope.launch {
-                                                                 // ! Тут нужно исправить
-
-
-                                                             }
-                                                         }
-                                                     } else {
-                                                         longPressJob.cancel()
-                                                         // ! Тут нужно исправить
+                                                    val longPressJob = scope.launch {
+                                                        delay(100)
+                                                        watchOriginalImage = true
 
 
-                                                     }
-                                                 }
-                                             }
-                                         }
-                                         .align(Alignment.BottomEnd)
-                                 ) {
-                                     Icon(
-                                         painterResource(R.drawable.outline_photo_size_select_small_24),
-                                         null,
-                                         tint = Color.Black
-                                     )
-                                 }
-                             }
+                                                    }
+
+                                                    val up = waitForUpOrCancellation()
+
+                                                    longPressJob.cancel()
+
+                                                    if (up != null) {
+                                                        val duration =
+                                                            up.uptimeMillis - down.uptimeMillis
+                                                        if (duration < 100) {
+                                                            watchOriginalImage = false
 
 
-                         }
+                                                        } else {
+                                                            scope.launch {
+                                                                watchOriginalImage = false
+
+
+                                                            }
+                                                        }
+                                                    } else {
+                                                        longPressJob.cancel()
+                                                        watchOriginalImage = false
+
+
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .align(Alignment.BottomCenter)
+                                )
+
+                            }
+
+
+                        }
                     }
                 }
 
@@ -465,7 +484,10 @@ fun FiltersScreen(
 
                                     val filter = colorFilters.value
                                     val outputBitmap = if (filter != null) {
-                                        createBitmap(finalBitmap.width, finalBitmap.height).also { bmpWithFilter ->
+                                        createBitmap(
+                                            finalBitmap.width,
+                                            finalBitmap.height
+                                        ).also { bmpWithFilter ->
                                             Canvas(bmpWithFilter).drawBitmap(
                                                 finalBitmap, 0f, 0f,
                                                 Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -518,7 +540,7 @@ fun FiltersScreen(
                         when (selectedColors) {
 
                             0 -> {
-                                CustomSlider (
+                                CustomSlider(
                                     value = progressBrightness,
                                     onValueChange = { progressBrightness = it },
                                     valueRange = -255f..255f
@@ -526,7 +548,7 @@ fun FiltersScreen(
                             }
 
                             1 -> {
-                                CustomSlider (
+                                CustomSlider(
                                     value = progressContrast,
                                     onValueChange = { progressContrast = it },
                                     valueRange = 0f..4f
@@ -535,7 +557,7 @@ fun FiltersScreen(
                             }
 
                             2 -> {
-                                CustomSlider (
+                                CustomSlider(
                                     value = progressSaturation,
                                     onValueChange = { progressSaturation = it },
                                     valueRange = 0f..2f
@@ -589,7 +611,10 @@ fun FiltersScreen(
 
                                     val filter = colorFilters.value
                                     val outputBitmap = filter?.let {
-                                        createBitmap(finalBitmap.width, finalBitmap.height).also { bmpWithFilter ->
+                                        createBitmap(
+                                            finalBitmap.width,
+                                            finalBitmap.height
+                                        ).also { bmpWithFilter ->
                                             Canvas(bmpWithFilter).drawBitmap(
                                                 finalBitmap, 0f, 0f,
                                                 Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -737,8 +762,6 @@ fun FiltersScreen(
         }
     }
 }
-
-
 
 
 data class ColoredStroke(
