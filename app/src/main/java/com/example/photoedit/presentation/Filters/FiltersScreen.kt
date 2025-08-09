@@ -264,6 +264,7 @@ fun FiltersScreen(
                                     CoilImage(
                                         imageModel = { selectedImage },
                                         modifier = Modifier
+                                            .padding(horizontal = 8.dp)
                                             .fillMaxWidth(),
                                         imageOptions = ImageOptions(
                                             contentScale = ContentScale.Fit
