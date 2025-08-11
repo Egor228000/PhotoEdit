@@ -1,7 +1,12 @@
 package com.example.photoedit
 
+import android.content.ContentValues
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -38,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -50,6 +56,9 @@ import com.example.photoedit.core.navigation.GalleryScreenNavKey
 import com.example.photoedit.core.navigation.NavigationRoot
 import com.example.photoedit.presentation.Gallery.GalleryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -66,7 +75,6 @@ class MainActivity : ComponentActivity() {
             val backStack = rememberNavBackStack(GalleryScreenNavKey)
 
             val selectedIndex by galleryViewModel.selectedIndex.collectAsStateWithLifecycle()
-            val selectedImage by galleryViewModel.selectedImage.collectAsStateWithLifecycle()
 
             Scaffold(
                 modifier = Modifier
@@ -97,6 +105,8 @@ class MainActivity : ComponentActivity() {
 fun TopBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
     val fullSizeImage by galleryViewModel.fullSizeImage.collectAsStateWithLifecycle()
     val selectedImage by galleryViewModel.selectedImage.collectAsStateWithLifecycle()
+    val resultBitman by galleryViewModel.resultBitman.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     CenterAlignedTopAppBar(
         modifier = Modifier
@@ -117,7 +127,35 @@ fun TopBar(backStack: NavBackStack, galleryViewModel: GalleryViewModel) {
         actions = {
             if (selectedImage != null) {
                 IconButton(
-                    onClick = {}
+                    onClick = {
+                        resultBitman?.let { bitmap ->
+
+                            val filename = "filtered_image_${System.currentTimeMillis()}.png"
+                            val fos: OutputStream?
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val resolver = context.contentResolver
+                                val contentValues = ContentValues().apply {
+                                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                                    put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                                }
+
+                                val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                                fos = imageUri?.let { resolver.openOutputStream(it) }
+                            } else {
+                                val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                val image = File(imagesDir, filename)
+                                fos = FileOutputStream(image)
+                            }
+
+                            fos?.use {
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                                Toast.makeText(context, "Изображение сохранено в галерею", Toast.LENGTH_SHORT).show()
+                                backStack.removeLastOrNull()
+                            }
+                        }
+                    }
                 ) {
                     Icon(
                         painterResource(R.drawable.baseline_done_24),
