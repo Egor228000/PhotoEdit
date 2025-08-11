@@ -47,8 +47,6 @@ dependencies {
 
     implementation (libs.androidx.core.splashscreen)
     // Загрузка изображений
-    implementation("com.github.skydoves:landscapist-transformation:2.5.1")
-    implementation(libs.landscapist.palette)
     implementation(libs.landscapist.coil)
     // Ml kit
     implementation(libs.segmentation.selfie)
@@ -65,8 +63,6 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     implementation (libs.androidx.hilt.navigation.compose)
     // Room
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
     // Serialization
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
