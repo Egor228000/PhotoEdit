@@ -254,8 +254,7 @@ fun FiltersScreen(
                                         bitmap = (resultBitman ?: bmp).asImageBitmap(),
                                         contentDescription = null,
                                         modifier = Modifier
-                                            .fillMaxWidth(),
-                                        alignment = Alignment.Center,
+                                            .fillMaxSize(),
                                         contentScale = ContentScale.Fit,
                                         colorFilter = colorFilters.value
                                     )
