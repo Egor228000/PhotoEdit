@@ -62,7 +62,6 @@ import java.io.OutputStream
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
