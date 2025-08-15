@@ -64,7 +64,7 @@ import java.io.OutputStream
 class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
